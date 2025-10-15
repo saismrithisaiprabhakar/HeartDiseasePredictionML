@@ -1,0 +1,7 @@
+echo "*.ipynb
+.ipynb_checkpoints/
+*.csv
+*.json
+__pycache__/
+.env
+.streamlit/secrets.toml" > .gitignore
