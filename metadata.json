@@ -1,0 +1,18 @@
+{
+  "feature_order": [
+    "oldpeak",
+    "age_oldpeak",
+    "ca",
+    "sex",
+    "cp",
+    "dataset"
+  ],
+  "feature_types": {
+    "oldpeak": "numeric",
+    "age_oldpeak": "numeric",
+    "ca": "numeric",
+    "sex": "categorical",
+    "cp": "categorical",
+    "dataset": "categorical"
+  }
+}
