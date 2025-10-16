@@ -3,6 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import streamlit as st
+from dotenv import find_dotenv, load_dotenv 
 
 st.set_page_config(page_title="Heart Disease Risk (XGBoost)", page_icon="❤️", layout="wide")
 st.title("Heart Disease Risk (XGBoost)")
