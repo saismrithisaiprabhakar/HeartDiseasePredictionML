@@ -6,6 +6,7 @@ import streamlit as st
 from dotenv import find_dotenv, load_dotenv
 import os  
 import groq
+from cryptography.fernet import Fernet
 
 st.set_page_config(page_title="Heart Disease Risk (XGBoost)", page_icon="❤️", layout="wide")
 st.title("Heart Disease Risk (XGBoost)")
