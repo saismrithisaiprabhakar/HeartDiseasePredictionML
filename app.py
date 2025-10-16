@@ -82,6 +82,51 @@ for i, feat in enumerate(FEATURES):
                 )
             else:
                 vals[feat] = st.number_input(feat, value=0.0)
+                
+def _decrypt_with_fernet(enc_text: str, fernet_key_b64: str) -> str:
+    """
+    Decrypts a Fernet-encrypted base64 string using a base64 Fernet key.
+    Returns the plaintext string.
+    """
+    if not enc_text:
+        raise RuntimeError("Encrypted text is empty.")
+    if not fernet_key_b64:
+        raise RuntimeError("FERNET_KEY is missing.")
+
+    try:
+        f = Fernet(fernet_key_b64.encode())
+        plaintext_bytes = f.decrypt(enc_text.encode())
+        return plaintext_bytes.decode()
+    except InvalidToken:
+        raise RuntimeError("Failed to decrypt: Invalid Fernet key or ciphertext.")
+    except Exception as e:
+        raise RuntimeError(f"Unexpected decrypt error: {e}")
+
+def get_groq_api_key() -> str:
+    # 1) Get Fernet key **from Streamlit secrets**
+    try:
+        fernet_key_b64 = st.secrets["FERNET_KEY"]
+    except KeyError:
+        # Optional: allow local dev fallback via env var
+        fernet_key_b64 = os.environ.get("FERNET_KEY")
+        if not fernet_key_b64:
+            raise RuntimeError("FERNET_KEY not found in st.secrets or environment.")
+
+    # 2) Load your .env that contains the **encrypted** Groq key
+    dotenv_path = find_dotenv(filename="groq_api.env", usecwd=True)
+    if not dotenv_path:
+        raise RuntimeError("Could not find groq_api.env")
+    load_dotenv(dotenv_path=dotenv_path, override=False)
+
+    # 3) Read encrypted key from env. Prefer GROQ_API_KEY_ENC; fallback to GROQ_API_KEY.
+    enc = os.getenv("GROQ_API_KEY_ENC") or os.getenv("GROQ_API_KEY")
+    if not enc:
+        raise RuntimeError("Encrypted key not found in groq_api.env (GROQ_API_KEY_ENC / GROQ_API_KEY).")
+
+    # 4) Decrypt with Fernet key from st.secrets
+    return _decrypt_with_fernet(enc_text=enc, fernet_key_b64=fernet_key_b64)
+
+
 def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
     """
     Calls Groq to turn a probability + inputs into a layperson summary.
@@ -93,7 +138,7 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
     # Load API key
     dotenv_path = find_dotenv(filename="groq_api.env", usecwd=True)
     load_dotenv(dotenv_path=dotenv_path, override=True)
-    key = os.getenv("GROQ_API_KEY")
+    key = get_groq_api_key()
 
     # Initialize client
     client = Groq(api_key=key)
