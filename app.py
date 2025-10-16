@@ -100,8 +100,6 @@ def _decrypt_with_fernet(enc_text: str, fernet_key_b64: str) -> str:
         f = Fernet(fernet_key_b64.encode())
         plaintext_bytes = f.decrypt(enc_text.encode())
         return plaintext_bytes.decode()
-    except InvalidToken:
-        raise RuntimeError("Failed to decrypt: Invalid Fernet key or ciphertext.")
     except Exception as e:
         raise RuntimeError(f"Unexpected decrypt error: {e}")
 
