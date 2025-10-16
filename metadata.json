@@ -1,18 +1,70 @@
 {
   "feature_order": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalch",
     "oldpeak",
-    "age_oldpeak",
-    "ca",
     "sex",
     "cp",
-    "dataset"
+    "fbs",
+    "restecg",
+    "exang",
+    "ca",
+    "dataset",
+    "slope",
+    "thal"
   ],
+  "feature_ranges": {
+    "age": {
+      "min": 28.0,
+      "max": 77.0
+    },
+    "trestbps": {
+      "min": 0.0,
+      "max": 200.0
+    },
+    "chol": {
+      "min": 0.0,
+      "max": 603.0
+    },
+    "thalch": {
+      "min": 60.0,
+      "max": 202.0
+    },
+    "oldpeak": {
+      "min": -2.6,
+      "max": 6.2
+    }
+  },
   "feature_types": {
+    "age": "numeric",
+    "trestbps": "numeric",
+    "chol": "numeric",
+    "thalch": "numeric",
     "oldpeak": "numeric",
-    "age_oldpeak": "numeric",
-    "ca": "numeric",
     "sex": "categorical",
     "cp": "categorical",
-    "dataset": "categorical"
+    "fbs": "categorical",
+    "restecg": "categorical",
+    "exang": "categorical",
+    "ca": "categorical",
+    "dataset": "categorical",
+    "slope": "categorical",
+    "thal": "categorical"
+  },
+  "feature_means": {
+    "age": 53.51086956521739,
+    "trestbps": 132.17934782608697,
+    "chol": 199.9679347826087,
+    "thalch": 137.13532608695652,
+    "oldpeak": 0.8902173913043478
+  },
+  "feature_stds": {
+    "age": 9.424685209576857,
+    "trestbps": 18.487722232607535,
+    "chol": 109.07241359819153,
+    "thalch": 25.264302597691938,
+    "oldpeak": 1.0611611869871331
   }
 }
