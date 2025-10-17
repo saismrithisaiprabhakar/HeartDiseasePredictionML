@@ -33,9 +33,31 @@ def _to_py(x):
     if isinstance(x, (np.generic,)):
         return x.item()
     return x
-
+    
+def _coerce_cat_to_option(val, options):
+    """Coerce a raw dataframe value to a valid selectbox option."""
+    if not options:
+        return None
+    opts = [_to_py(v) for v in options]
+    v = _to_py(val)
+    if v in opts:
+        return v
+    # common casts (e.g., '1' vs 1)
+    candidates = [v, str(v)]
+    try:
+        fv = float(v)
+        if fv.is_integer():
+            candidates.append(int(fv))
+    except Exception:
+        pass
+    for c in candidates:
+        if c in opts:
+            return c
+    return opts[0]
+    
 cat_values = {feat: [_to_py(v) for v in cats]
               for feat, cats in zip(cat_cols_fitted, ohe.categories_)}
+              
 
 # Sidebar (this must be real code, not quoted text)
 with st.sidebar:
@@ -62,31 +84,83 @@ if set(FEATURES) != set(fitted_order):
     st.warning("Feature mismatch between metadata.json and the fitted preprocessor. "
                "Using fitted preprocessor’s column order.")
     FEATURES = fitted_order
+    
+    
+@st.cache_data
+def try_load_data():
+    try:
+        # change path/name if needed; commit a small sample for Streamlit Cloud
+        return pd.read_csv("heart.csv")
+    except Exception:
+        return None
+
+df_random = try_load_data()
+
+st.write("### Quick fill")
+btn = st.button("🎲 Insert Data", disabled=(df_random is None))
+if btn:
+    if df_random is None or len(df_random) == 0:
+        st.warning("No dataset found or dataset is empty.")
+    else:
+        row = df_random.sample(1).iloc[0]
+        for feat in FEATURES:
+            if feat in cat_values:
+                st.session_state[f"sel_{feat}"] = _coerce_cat_to_option(row.get(feat, None), cat_values[feat])
+            else:
+                v = row.get(feat, np.nan)
+                try:
+                    st.session_state[f"in_{feat}"] = float(v) if pd.notna(v) else 0.0
+                except Exception:
+                    st.session_state[f"in_{feat}"] = 0.0
+        st.rerun()
+
+if df_random is None:
+    st.caption("Tip: Commit a small sample dataset at `data/heart.csv` to enable the random-fill button.")
 
 st.subheader("Enter Features")
 vals = {}
 c1, c2 = st.columns(2)
 feature_ranges = meta.get("feature_ranges", {})
+
 for i, feat in enumerate(FEATURES):
     with (c1 if i % 2 == 0 else c2):
         if feat in cat_values:
-            choice = st.selectbox(feat, options=cat_values[feat], key=f"sel_{feat}")
+            choice = st.selectbox(
+                feat,
+                options=cat_values[feat],
+                key=f"sel_{feat}"
+            )
             vals[feat] = choice
         else:
             rng = feature_ranges.get(feat)
+            key = f"in_{feat}"
             if rng:
                 min_val = float(rng["min"])
                 max_val = float(rng["max"])
                 label = f"{feat} (range: {min_val:.1f} – {max_val:.1f})"
-                vals[feat] = st.number_input(
-                    label,
-                    min_value=min_val,
-                    max_value=max_val,
-                    value=(min_val + max_val) / 2
-                )
+
+                if key in st.session_state:
+                    vals[feat] = st.number_input(
+                        label,
+                        min_value=min_val,
+                        max_value=max_val,
+                        key=key
+                    )
+                else:
+                    default_val = (min_val + max_val) / 2
+                    vals[feat] = st.number_input(
+                        label,
+                        min_value=min_val,
+                        max_value=max_val,
+                        value=default_val,
+                        key=key
+                    )
             else:
-                vals[feat] = st.number_input(feat, value=0.0)
-                
+                if key in st.session_state:
+                    vals[feat] = st.number_input(feat, key=key)
+                else:
+                    vals[feat] = st.number_input(feat, value=0.0, key=key)
+                    
 def _decrypt_with_fernet(enc_text: str, fernet_key_b64: str) -> str:
     """
     Decrypts a Fernet-encrypted base64 string using a base64 Fernet key.
@@ -133,14 +207,17 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
     """
     Calls Groq to turn a probability + inputs into a layperson summary.
     """
-    from dotenv import find_dotenv, load_dotenv
-    import os
-    from groq import Groq
 
-    # Load API key
+    # Load API key - uncomment before commiting to git.
     dotenv_path = find_dotenv(filename="groq_api.env", usecwd=True)
     load_dotenv(dotenv_path=dotenv_path, override=True)
     key = get_groq_api_key()
+    
+    #Comment/remove before putting to github
+    '''dotenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
+    load_dotenv(dotenv_path=dotenv_path, override=True)
+    key = os.getenv("GROQ_API_KEY")'''
+
 
     # Initialize client
     client = Groq(api_key=key)
@@ -182,7 +259,7 @@ End with a clear disclaimer:“This explanation is for educational purposes to h
 
 def _is_one(val):
     # handle 1, "1", True consistently
-    return str(val).strip().lower() in {"1", "true"}
+    return str(val).strip().lower() in {"1", "true", "1.0"}
 
 def _as_float(v):
     try:
@@ -194,7 +271,7 @@ def _as_float(v):
 if st.button("Get risk score"):
     # 1) Build input row for prediction
     X_row = pd.DataFrame([[vals[f] for f in FEATURES]], columns=FEATURES)
-
+    print(X_row)
     # 2) Predict probability
     try:
         p1 = float(model.predict_proba(X_row)[:, 1][0])
@@ -207,103 +284,99 @@ if st.button("Get risk score"):
     st.progress(min(max(p1, 0.0), 1.0))
 
     # 4) Build review table with flags
+    AGE_CUT = 62
+    OLDPEAK_CUT = 1.7
+    CHOL_CUT = 240
+
     rows = []
     for feat in FEATURES:
         val = vals.get(feat)
         flagged = False
         reason  = ""
 
-        # Numeric rule: value > mean => flag (with gradient)
+        # ---- Numeric thresholds (no mean-based logic) ----
         if feat not in cat_values:
-            v  = _as_float(val)
-            mu = feature_means.get(feat, np.nan)
-            sd = feature_stds.get(feat, np.nan)
+            v = _as_float(val)
 
-            if not np.isnan(v) and not np.isnan(mu):
-                if v > mu:
-                    flagged = True
-                    reason  = f">{mu:.2f} (mean)"
-            # extra rule for 'ca'
-            if feat == "ca":
-                if not np.isnan(v) and v > 1:
-                    flagged = True
-                    reason  = "ca > 1"
-        else:
-            # Categorical rules
-            if feat in {"fbs", "exang"} and _is_one(val):
+            if feat == "age" and not np.isnan(v) and v > AGE_CUT:
                 flagged = True
-                reason  = f"{feat} == 1"
-            if feat == "ca":
-                # sometimes ca is categorical in some pipelines
-                try:
-                    if _as_float(val) > 1:
-                        flagged = True
-                        reason  = "ca > 1"
-                except Exception:
-                    pass
+                reason  = f"age > {AGE_CUT}"
+
+            elif feat == "oldpeak" and not np.isnan(v) and v > OLDPEAK_CUT:
+                flagged = True
+                reason  = f"oldpeak > {OLDPEAK_CUT}"
+
+            elif feat == "chol" and not np.isnan(v) and v > CHOL_CUT:
+                flagged = True
+                reason  = f"chol > {CHOL_CUT}"
+
+        # ---- Categorical thresholds ----
+        else:
+            if feat == "exang" and _is_one(val):
+                flagged = True
+                reason  = "exang == 1"
 
         rows.append({
             "feature": feat,
             "entered_value": val,
-            "mean": (f"{feature_means[feat]:.2f}" if feat in feature_means and not np.isnan(feature_means[feat]) else ""),
+            # keep mean if you already compute feature_means; otherwise leave ""
             "rule_triggered": reason,
             "flag": flagged
         })
 
     df_view = pd.DataFrame(rows)
+    
 
     # 5) Style: shades of red for numeric > mean (stronger if farther above mean).
     #    For categorical flags, use a solid red highlight.
     def _cell_style(row):
-        """
-        Styles each row of df_view:
-          - Shades numeric cells red if value > dataset mean (stronger if higher)
-          - Highlights categorical rules (fbs==1, exang==1, ca>1)
-        """
-        styles = [""] * len(row)
+        styles = [""] * len(df_view.columns)
         if "entered_value" not in df_view.columns:
             return styles
 
-        idx_val = df_view.columns.get_loc("entered_value")
+        idx_val  = df_view.columns.get_loc("entered_value")
+        idx_rule = df_view.columns.get_loc("rule_triggered")
+
         feat = row.get("feature")
         val  = row.get("entered_value")
+        v    = _as_float(val)
 
-        # --- Numeric features ---
-        if feat not in cat_values:
-            v  = _as_float(val)
-            mu = feature_means.get(feat, np.nan)
-            sd = feature_stds.get(feat, np.nan)
+    # exang == 1 (categorical)
+        if feat == "exang" and _is_one(val):
+            styles[idx_val]  = "background-color: rgba(255,0,0,0.45); color:#7a0010; font-weight:700;"
+            styles[idx_rule] = "color:#7a0010; font-weight:700;"
+            return styles
 
-            if not np.isnan(v) and not np.isnan(mu) and v > mu:
-                # z-score (cap at 3 for shading)
-                z = 0.0 if np.isnan(sd) or sd <= 0 else (v - mu) / sd
-                z = max(0.0, min(z, 3.0))
-                alpha = 0.20 + 0.50 * (z / 3.0)
-                styles[idx_val] = (
-                    f"background-color: rgba(255,0,0,{alpha}); "
-                    "color: #7a0010; font-weight: 600;"
-                )
+    # age > 62 with gradient (stronger when farther above 62)
+        if feat == "age" and not np.isnan(v) and v > AGE_CUT:
+            gap   = max(0.0, v - AGE_CUT)
+            alpha = max(0.25, min(0.70, 0.25 + gap * 0.03))  # tune gradient here
+            styles[idx_val]  = f"background-color: rgba(255,0,0,{alpha}); color:#7a0010; font-weight:700;"
+            styles[idx_rule] = "color:#7a0010; font-weight:700;"
+            return styles
 
-        # --- Categorical rules ---
-        else:
-            if (feat in {"fbs", "exang"} and _is_one(val)) or (
-                feat == "ca" and _as_float(val) > 1
-            ):
-                styles[idx_val] = (
-                    "background-color: rgba(255,0,0,0.35); "
-                    "color: #7a0010; font-weight: 700;"
-                )
+    # oldpeak > 1.7 or chol > 240 (solid red)
+        if feat == "oldpeak" and not np.isnan(v) and v > OLDPEAK_CUT:
+            styles[idx_val]  = "background-color: rgba(255,0,0,0.45); color:#7a0010; font-weight:700;"
+            styles[idx_rule] = "color:#7a0010; font-weight:700;"
+            return styles
+
+        if feat == "chol" and not np.isnan(v) and v > CHOL_CUT:
+            styles[idx_val]  = "background-color: rgba(255,0,0,0.45); color:#7a0010; font-weight:700;"
+            styles[idx_rule] = "color:#7a0010; font-weight:700;"
+            return styles
 
         return styles
 
-    df_view = df_view[['feature', 'entered_value', 'mean']]
-    st.subheader("Entered values vs reference")
+# show the same columns; cast entered_value to str for safe rendering
+    df_view = df_view[['feature', 'entered_value', 'rule_triggered']]
     df_view["entered_value"] = df_view["entered_value"].astype(str)
+
+    st.subheader("Entered values vs thresholds")
     st.dataframe(
-        df_view.style.apply(_cell_style, axis=1),
+    df_view.style.apply(_cell_style, axis=1),
         use_container_width=True
     )
-
     # 4️⃣ Call Groq for a natural explanation
     explanation = llm_explanation_with_groq(p1, vals)
 
