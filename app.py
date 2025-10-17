@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 from dotenv import find_dotenv, load_dotenv
 import os  
-import groq
+from groq import Groq
 from cryptography.fernet import Fernet
 
 st.set_page_config(page_title="Heart Disease Risk (XGBoost)", page_icon="❤️", layout="wide")
@@ -90,7 +90,7 @@ if set(FEATURES) != set(fitted_order):
 def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
-        return pd.read_csv("heart.csv")
+        return pd.read_csv("data/heart.csv")
     except Exception:
         return None
 
