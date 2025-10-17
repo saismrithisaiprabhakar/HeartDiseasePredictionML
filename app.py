@@ -90,7 +90,7 @@ if set(FEATURES) != set(fitted_order):
 def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
-        return pd.read_csv("data/heart.csv")
+        return pd.read_csv("./heart.csv")
     except Exception:
         return None
 
