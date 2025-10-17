@@ -1,0 +1,21 @@
+age,sex,dataset,cp,trestbps,chol,fbs,restecg,thalch,exang,oldpeak,slope,ca,thal
+62,Male,Cleveland,atypical angina,128,208,TRUE,lv hypertrophy,140,FALSE,0,upsloping,0,normal
+57,Male,Cleveland,asymptomatic,110,201,FALSE,normal,126,TRUE,1.5,flat,0,fixed defect
+58,Male,Cleveland,asymptomatic,146,218,FALSE,normal,105,FALSE,2,flat,1,reversable defect
+64,Male,Cleveland,asymptomatic,128,263,FALSE,normal,105,TRUE,0.2,flat,1,reversable defect
+51,Female,Cleveland,non-anginal,120,295,FALSE,lv hypertrophy,157,FALSE,0.6,upsloping,0,normal
+43,Male,Cleveland,asymptomatic,115,303,FALSE,normal,181,FALSE,1.2,flat,0,normal
+42,Female,Cleveland,non-anginal,120,209,FALSE,normal,173,FALSE,0,flat,0,normal
+67,Female,Cleveland,asymptomatic,106,223,FALSE,normal,142,FALSE,0.3,upsloping,2,normal
+76,Female,Cleveland,non-anginal,140,197,FALSE,st-t abnormality,116,FALSE,1.1,flat,0,normal
+70,Male,Cleveland,atypical angina,156,245,FALSE,lv hypertrophy,143,FALSE,0,upsloping,0,normal
+57,Male,Cleveland,atypical angina,124,261,FALSE,normal,141,FALSE,0.3,upsloping,0,reversable defect
+44,Female,Cleveland,non-anginal,118,242,FALSE,normal,149,FALSE,0.3,flat,1,normal
+58,Female,Cleveland,atypical angina,136,319,TRUE,lv hypertrophy,152,FALSE,0,upsloping,2,normal
+60,Female,Cleveland,typical angina,150,240,FALSE,normal,171,FALSE,0.9,upsloping,0,normal
+44,Male,Cleveland,non-anginal,120,226,FALSE,normal,169,FALSE,0,upsloping,0,normal
+61,Male,Cleveland,asymptomatic,138,166,FALSE,lv hypertrophy,125,TRUE,3.6,flat,1,normal
+42,Male,Cleveland,asymptomatic,136,315,FALSE,normal,125,TRUE,1.8,flat,0,fixed defect
+52,Male,Cleveland,asymptomatic,128,204,TRUE,normal,156,TRUE,1,flat,0,
+59,Male,Cleveland,non-anginal,126,218,TRUE,normal,134,FALSE,2.2,flat,1,fixed defect
+40,Male,Cleveland,asymptomatic,152,223,FALSE,normal,181,FALSE,0,upsloping,0,reversable defect
