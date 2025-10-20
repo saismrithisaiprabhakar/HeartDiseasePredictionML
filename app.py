@@ -91,8 +91,7 @@ def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
         df_data = pd.read_csv("./heart_test.csv")
-        df_data = df_data.drop(['predicted_labels', 'predicted_probability'], inplace = True)
-        return df_data
+        return df_data.drop(['predicted_labels', 'predicted_probability'], inplace = True, axis = 1)
     except Exception:
         return None
 
