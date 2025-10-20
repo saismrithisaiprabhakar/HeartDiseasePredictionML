@@ -90,7 +90,9 @@ if set(FEATURES) != set(fitted_order):
 def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
-        return pd.read_csv("./heart.csv")
+        df_data = pd.read_csv("./heart_test.csv")
+        df_data = df_data.drop(['predicted_labels', 'predicted_probability'], inplace = True)
+        return df_data
     except Exception:
         return None
 
@@ -214,9 +216,9 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
     key = get_groq_api_key()
     
     #Comment/remove before putting to github
-    '''dotenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
+    """otenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
     load_dotenv(dotenv_path=dotenv_path, override=True)
-    key = os.getenv("GROQ_API_KEY")'''
+    key = os.getenv("GROQ_API_KEY")"""
 
 
     # Initialize client
