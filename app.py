@@ -86,7 +86,7 @@ if set(FEATURES) != set(fitted_order):
     FEATURES = fitted_order
     
     
-@st.cache_data
+#@st.cache_data
 def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
