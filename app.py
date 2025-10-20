@@ -90,7 +90,9 @@ if set(FEATURES) != set(fitted_order):
 def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
-        return pd.read_csv("./heart.csv")
+        df_data = pd.read_csv("./heart_test.csv")
+        df_data = df_data.drop(['predicted_labels', 'predicted_probability'], inplace = True)
+        return df_data
     except Exception:
         return None
 
