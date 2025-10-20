@@ -91,13 +91,14 @@ def try_load_data():
     try:
         # change path/name if needed; commit a small sample for Streamlit Cloud
         df_data = pd.read_csv("./heart_test.csv")
-        return df_data.drop(['predicted_label', 'predicted_probability'], inplace = True, axis = 1)
+        df_data = df_data.drop(['predicted_label', 'predicted_probability'], axis = 1)
+        return df_data
     except Exception as e:
         st.write("### Exception Occured", e)
         return None
 
 df_random = try_load_data()
-print(df_random)
+#print(df_random)
 st.write("### Quick fill")
 btn = st.button("🎲 Insert Data", disabled=(df_random is None))
 if btn:
