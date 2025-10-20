@@ -92,7 +92,8 @@ def try_load_data():
         # change path/name if needed; commit a small sample for Streamlit Cloud
         df_data = pd.read_csv("./heart_test.csv")
         return df_data.drop(['predicted_labels', 'predicted_probability'], inplace = True, axis = 1)
-    except Exception:
+    except Exception as e:
+        st.write("### Exception Occured", e)
         return None
 
 df_random = try_load_data()
