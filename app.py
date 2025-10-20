@@ -97,7 +97,7 @@ def try_load_data():
         return None
 
 df_random = try_load_data()
-
+print(df_random)
 st.write("### Quick fill")
 btn = st.button("🎲 Insert Data", disabled=(df_random is None))
 if btn:
@@ -216,7 +216,7 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
     key = get_groq_api_key()
     
     #Comment/remove before putting to github
-    """otenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
+    """dotenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
     load_dotenv(dotenv_path=dotenv_path, override=True)
     key = os.getenv("GROQ_API_KEY")"""
 
