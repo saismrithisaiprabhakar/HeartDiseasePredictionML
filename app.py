@@ -8,8 +8,8 @@ import os
 from groq import Groq
 from cryptography.fernet import Fernet
 
-st.set_page_config(page_title="Heart Disease Risk (XGBoost)", page_icon="❤️", layout="wide")
-st.title("Heart Disease Risk (XGBoost)")
+st.set_page_config(page_title="Heart Disease Risk Prediction (XGBoost)", page_icon="❤️", layout="wide")
+st.title("Heart Disease Risk Prediction(XGBoost)")
 
 @st.cache_resource
 def load_artifacts():
@@ -64,9 +64,8 @@ with st.sidebar:
     st.header("About this score")
     st.write(
         "- This shows the **predicted probability of heart disease (class 1)** "
-        "from the model (`predict_proba`).\n"
-        "- Score is 0–1 (higher = higher estimated risk).\n"
-        "- No threshold/decision is applied."
+        "from the XGBoost model.\n"
+        " The Score is 0–1 (higher = higher estimated risk).\n"
     )
     st.caption("Demo only. Not medical advice.")
 
@@ -212,14 +211,14 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
     """
 
     # Load API key - uncomment before commiting to git.
-    dotenv_path = find_dotenv(filename="groq_api.env", usecwd=True)
-    load_dotenv(dotenv_path=dotenv_path, override=True)
-    key = get_groq_api_key()
+    #dotenv_path = find_dotenv(filename="groq_api.env", usecwd=True)
+    #load_dotenv(dotenv_path=dotenv_path, override=True)
+    #key = get_groq_api_key()
     
     #Comment/remove before putting to github
-    #"""dotenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
-    #load_dotenv(dotenv_path=dotenv_path, override=True)
-    #key = os.getenv("GROQ_API_KEY")"""
+    dotenv_path = find_dotenv(filename="groq_api_local.env", usecwd=True)
+    load_dotenv(dotenv_path=dotenv_path, override=True)
+    key = os.getenv("GROQ_API_KEY")
 
 
     # Initialize client
@@ -231,21 +230,20 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
 
     # Prompt
     prompt = f"""
-You are a compassionate, knowledgeable doctor explaining heart-health test results to a patient in simple, calm language.
-Your tone should be professional, warm, and reassuring — not alarming.The inputs include features like age, sex, chest pain type, resting BP, 
-cholesterol, fasting blood sugar, resting ECG results,exercise-induced angina, oldpeak (ST depression after exercise), slope of the ST segment, 
-ca (number of major vessels seen in fluoroscopy), and thal (thalassemia).
+You are a compassionate, knowledgeable medical assistant collaborating with a doctor. You both are reviewing a patient's heart-health record together. You should communicate clearly, calmly, and professionally — providing observations that help the doctor understand model-based results without alarming language.
 Task:
-Write 3-4 short bullet points explanation summarizing the results below as a doctor explains a patient.
+The goal is to summarize a model-based estimate of heart disease probability and provide concise, medically informed observations about the patient’s recorded test results. 
+The explanation should reference the patient’s records (not address the patient directly). Maintain a tone suitable for a clinical peer discussion.
+Write a short explanatory summary in paragraph + bullet format (not more than 4 points with 20 or less words each).
+Avoid “you” or “your” — refer to “the patient” or “the records.”
+Conclude with a footer disclaimer only.
 Inputs:
+The inputs include features like age, sex, chest pain type, resting BP,cholesterol, fasting blood sugar, resting ECG results,exercise-induced angina, oldpeak (ST depression after exercise), slope of the ST segment, 
+ca (number of major vessels seen in fluoroscopy), and thal (thalassemia).
 Estimated probability of heart disease (class 1): {pct}%
 Model inputs (verbatim): {inputs}
-Guidelines:
-Begin by stating what the estimated percentage means — it is a model-based statistical estimate, not a diagnosis.
-If the probability is high (> 70 %), gently explain that the result suggests a higher chance of heart-related concerns and that a discussion with a healthcare provider would be helpful.
-For each key feature mentioned in the inputs, give a short explanation of what it measures,typical range, and why this value might or might not suggest risk use your medical knowledge.
-Summarize the findings calmly: note which readings fall in the usual range and which might warrant follow-up. Do not have more than 4 points with less than 12 words.
-End with a clear disclaimer:“This explanation is for educational purposes to help you understand your results and is not a medical diagnosis.”"""
+add this Footer Disclaimer:
+“This explanation is for educational purposes only. It is a model-based statistical estimate, not a medical diagnosis.””"""
 
     # Call Groq
     resp = client.chat.completions.create(
@@ -271,7 +269,7 @@ def _as_float(v):
         return np.nan
 
 
-if st.button("Get risk score"):
+if st.button("Start Evaluation"):
     # 1) Build input row for prediction
     X_row = pd.DataFrame([[vals[f] for f in FEATURES]], columns=FEATURES)
     print(X_row)
@@ -374,6 +372,11 @@ if st.button("Get risk score"):
 # show the same columns; cast entered_value to str for safe rendering
     df_view = df_view[['feature', 'entered_value', 'rule_triggered']]
     df_view["entered_value"] = df_view["entered_value"].astype(str)
+    
+    priority_features = ["oldpeak", "chol", "exang", "age"]
+    other_features = [f for f in df_view["feature"] if f not in priority_features]
+    ordered_features = priority_features + other_features
+    df_view = df_view.set_index("feature").loc[ordered_features].reset_index()
 
     st.subheader("Entered values vs thresholds")
     st.dataframe(
@@ -384,7 +387,7 @@ if st.button("Get risk score"):
     explanation = llm_explanation_with_groq(p1, vals)
 
     # 5️⃣ Display it
-    st.markdown("### Human-readable explanation (LLM)")
+    st.markdown("### Clinical Summary (AI-Assisted)")
     if explanation:
         st.write(explanation)
     else:
