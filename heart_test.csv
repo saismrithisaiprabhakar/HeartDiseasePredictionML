@@ -1,11 +1,15 @@
 age,sex,dataset,cp,trestbps,chol,fbs,restecg,thalch,exang,oldpeak,slope,ca,thal,predicted_label,predicted_probability
-70,Male,Cleveland,non-anginal,160,269,0,normal,112,1,2.9,flat,1,reversable defect,1,0.7895046
-71,Female,Cleveland,asymptomatic,112,149,0,normal,125,0,1.6,flat,0,normal,0,0.4602722
-48,Male,Hungary,atypical angina,140,238,0,normal,118,0,0,flat,0,normal,0,0.24610017
-72,Male,Switzerland,non-anginal,160,0,0,lv hypertrophy,114,0,1.6,flat,2,normal,1,0.7557706
-65,Male,Switzerland,asymptomatic,160,0,1,st-t abnormality,122,0,1.4,flat,0,reversable defect,1,0.84170705
-46,Male,Cleveland,asymptomatic,140,311,0,normal,120,1,1.8,flat,2,reversable defect,1,0.8516643
-55,Male,VA Long Beach,non-anginal,0,0,0,normal,155,0,1.5,flat,0,normal,1,0.5302966
-41,Male,Cleveland,non-anginal,112,250,0,normal,179,0,0,upsloping,0,normal,0,0.22432911
-55,Female,Cleveland,asymptomatic,128,205,0,st-t abnormality,130,1,2,flat,1,reversable defect,1,0.78558576
-34,Male,Cleveland,typical angina,118,182,0,lv hypertrophy,174,0,0,upsloping,0,normal,0,0.28318802
+49,Male,Hungary,asymptomatic,130,206,0,normal,170,0,0,flat,0,normal,0,0.39844367
+61,Male,VA Long Beach,asymptomatic,120,282,0,st-t abnormality,135,1,4,downsloping,0,fixed defect,1,0.9196156
+55,Male,VA Long Beach,asymptomatic,172,260,0,normal,73,0,2,flat,0,normal,1,0.7990838
+71,Female,Cleveland,asymptomatic,112,149,0,normal,125,0,1.6,flat,0,normal,0,0.3526015
+48,Male,Hungary,atypical angina,140,238,0,normal,118,0,0,flat,0,normal,0,0.15718684
+56,Male,Cleveland,atypical angina,120,240,0,normal,169,0,0,downsloping,0,normal,0,0.10063435
+58,Male,Switzerland,asymptomatic,170,230,0,st-t abnormality,105,1,0,flat,0,normal,1,0.9205906
+32,Male,Switzerland,typical angina,95,240,0,normal,127,0,0.7,upsloping,0,normal,1,0.51105523
+59,Male,Hungary,atypical angina,140,287,0,normal,150,0,0,flat,0,normal,0,0.21538001
+55,Male,Hungary,asymptomatic,120,270,0,normal,140,0,0,flat,0,normal,0,0.43298608
+64,Male,Cleveland,typical angina,110,211,0,lv hypertrophy,144,1,1.8,flat,0,normal,1,0.607217
+54,Male,Hungary,asymptomatic,150,365,0,st-t abnormality,134,0,1,upsloping,0,normal,0,0.47711852
+48,Male,Hungary,non-anginal,110,211,0,normal,138,0,0,flat,0,fixed defect,0,0.39683187
+40,Female,Hungary,asymptomatic,150,392,0,normal,130,0,2,flat,0,fixed defect,0,0.4809999
