@@ -223,7 +223,7 @@ def llm_explanation_with_groq(probability: float, inputs: dict) -> str:
 
     # Initialize client
     client = Groq(api_key=key)
-    MODEL = "meta-llama/llama-4-maverick-17b-128e-instruct"
+    MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
     # Compute percentage
     pct = round(probability * 100, 1)
